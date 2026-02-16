@@ -8,35 +8,40 @@
 import SwiftUI
 
 struct ContentView: View {
-    private var viewModel = ContentViewModel()
+    @StateObject private var viewModel = ContentViewModel()
     @State private var path: [DeviceData] = [] // Navigation path
 
     var body: some View {
         NavigationStack(path: $path) {
             Group {
-                if let computers = viewModel.data, !computers.isEmpty {
-                    DevicesList(devices: computers) { selectedComputer in
-                        viewModel.navigateToDetail(navigateDetail: selectedComputer)
+                VStack {
+                    TextField("Search devices...", text: $viewModel.searchQuery)
+                        .padding(8)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(8)
+                        .padding(.horizontal)
+                    
+                    if viewModel.data.isEmpty {
+                        ProgressView("Loading...")
+                    } else {
+                        DevicesList(devices: viewModel.filteredData) { selectedComputer in
+                            viewModel.navigateToDetail(navigateDetail: selectedComputer)
+                        }
                     }
-                } else {
-                    ProgressView("Loading...")
                 }
             }
             .onChange(of: viewModel.navigateDetail, {
-                let navigate = viewModel.navigateDetail
-                path.append(navigate!)
+                if let navigate = viewModel.navigateDetail {
+                     path.append(navigate)
+                     viewModel.navigateDetail = nil // Reset state to prevent re-triggering
+                }
             })
             .navigationTitle("Devices")
             .navigationDestination(for: DeviceData.self) { computer in
                 DetailView(device: computer)
             }
             .onAppear {
-                let navigate = viewModel.navigateDetail
-                if (navigate != nil) {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        path.append(navigate!)
-                    }
-                }
+                viewModel.fetchAPI()
             }
         }
     }
