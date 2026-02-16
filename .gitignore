@@ -1,0 +1,22 @@
+## User settings
+xcuserdata/
+
+## Xcode
+#  build/
+!default.mode1v3
+!default.mode2v3
+!default.pbxuser
+!default.perspectivev3
+*.class
+*.lock
+*.ctxt
+.DS_Store
+*.swp
+*~
+*.xcuserstate
+
+## Swift Package Manager
+.build/
+
+## CocoaPods
+Pods/
